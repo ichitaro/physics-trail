@@ -9,12 +9,26 @@ type Options = {
   numSteps?: number
 }
 
+type TrackableObject = {
+  position: {
+    x: number
+    y: number
+    z: number
+  }
+  quaternion: {
+    x: number
+    y: number
+    z: number
+    w: number
+  }
+}
+
 export default class InstancedTrail extends THREE.Group {
   webgl = new Experience()
   geometry: THREE.BufferGeometry
   material: THREE.Material
   numSteps: number
-  bodies: CANNON.Body[] = []
+  objects: TrackableObject[] = []
   instancedMesh: THREE.InstancedMesh | null = null
   dummy: Object3D = new THREE.Object3D()
 
@@ -29,14 +43,14 @@ export default class InstancedTrail extends THREE.Group {
     this.numSteps = numSteps
   }
 
-  track(body: CANNON.Body) {
+  track(object: TrackableObject) {
     if (this.instancedMesh) return
 
-    this.bodies.push(body)
+    this.objects.push(object)
   }
 
   buildMesh() {
-    const count = this.bodies.length * this.numSteps
+    const count = this.objects.length * this.numSteps
     const instancedMesh = new THREE.InstancedMesh(
       this.geometry,
       this.material,
@@ -67,7 +81,7 @@ export default class InstancedTrail extends THREE.Group {
   step = () => {
     if (!this.instancedMesh) return
 
-    const { bodies: objects, instancedMesh, counter, dummy } = this
+    const { objects, instancedMesh, counter, dummy } = this
     const numObjects = objects.length
     for (let i = 0; i < numObjects; i++) {
       const obj = objects[i]

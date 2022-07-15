@@ -57,10 +57,11 @@ export function addPlayground() {
     markerColor: keyColor,
   })
 
-  const magnet = new Magnet({ radius: 2 })
+  const magnet = new Magnet()
+  const bodies = blocks.map((block) => block.body)
   webgl.events.tick.on(() => {
     if (webgl.pointer.isDragging && !picker.isDragging) {
-      magnet.applyForce(trail.bodies)
+      magnet.applyForce(bodies)
     }
   })
 
