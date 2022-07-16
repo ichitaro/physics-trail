@@ -14,12 +14,9 @@ export function addPlayground() {
   const { scene } = webgl
   const world = webgl.world!
 
-  const blockSize = new THREE.Vector3(1, 15, 3).multiplyScalar(0.07)
-  const blockGeometry = new THREE.BoxGeometry(
-    blockSize.x,
-    blockSize.y,
-    blockSize.z
-  )
+  const blockScale = 0.2
+  const blockSize = { radius: 1 * blockScale, height: 4 * blockScale }
+  const pyramid = createPyramid(blockSize.radius, blockSize.height)
   const blockMaterial = new THREE.MeshBasicMaterial({
     color: new THREE.Color(keyColor).convertSRGBToLinear(),
     transparent: true,
@@ -27,7 +24,7 @@ export function addPlayground() {
     depthTest: false,
   })
   const trail = new InstancedTrail({
-    geometry: blockGeometry,
+    geometry: pyramid.geometry,
     material: new THREE.MeshStandardMaterial({
       roughness: 0.1,
       metalness: 0,
@@ -38,10 +35,8 @@ export function addPlayground() {
   scene.add(trail)
   const blocks = Array.from({ length: 12 }).map(() => {
     const block = new Block({
-      shape: new CANNON.Box(
-        new CANNON.Vec3(0.5 * blockSize.x, 0.5 * blockSize.y, 0.5 * blockSize.z)
-      ),
-      geometry: blockGeometry,
+      shape: pyramid.shape,
+      geometry: pyramid.geometry,
       material: blockMaterial,
     })
     scene.add(block)
@@ -77,7 +72,7 @@ export function addPlayground() {
 
       dummy.position.set(
         (Math.random() - 0.5) * spread,
-        gap + 0.5 * blockSize.y,
+        gap + 0.5 * blockSize.height,
         (Math.random() - 0.5) * spread
       )
       dummy.rotation.set(0, Math.PI * Math.random(), 0)
@@ -117,4 +112,34 @@ function resetBody(body: CANNON.Body) {
   body.timeLastSleepy = 0
   //@ts-ignore
   body._wakeUpAfterNarrowphase = false
+}
+
+function createPyramid(radius: number = 1, height: number = 1.5) {
+  const geometry = new THREE.ConeGeometry(radius, height, 4, 1)
+  geometry.rotateY(Math.PI / 4)
+  geometry.computeVertexNormals()
+
+  const length = radius * Math.sqrt(2)
+  const vertices = [
+    new CANNON.Vec3(-length / 2, -height / 2, -length / 2),
+    new CANNON.Vec3(+length / 2, -height / 2, -length / 2),
+    new CANNON.Vec3(0, +height / 2, 0),
+    new CANNON.Vec3(-length / 2, -height / 2, +length / 2),
+    new CANNON.Vec3(+length / 2, -height / 2, +length / 2),
+  ]
+  const shape = new CANNON.ConvexPolyhedron({
+    vertices,
+    faces: [
+      [0, 3, 2], // -x
+      [0, 1, 4, 3], // -y
+      [0, 2, 1], // -z
+      [1, 4, 2], // +x
+      [3, 4, 2], // +z
+    ],
+  })
+
+  return {
+    geometry,
+    shape,
+  }
 }
