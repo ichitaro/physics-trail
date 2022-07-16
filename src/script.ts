@@ -46,7 +46,7 @@ assets.loadQueued().then(() => {
    */
   webgl.renderer.sortObjects = false
   webgl.renderer.physicallyCorrectLights = false
-  webgl.renderer.toneMappingExposure = 1.4
+  webgl.renderer.toneMappingExposure = 1.3
 
   /**
    * Camera

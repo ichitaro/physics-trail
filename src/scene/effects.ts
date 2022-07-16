@@ -5,6 +5,7 @@ import {
   SSAOEffect,
   DepthDownsamplingPass,
   BloomEffect,
+  BlendFunction,
 } from 'postprocessing'
 import assets from '../utils/assets'
 import Experience from '../utils/Experience'
@@ -33,20 +34,18 @@ export function addEffects() {
     distanceScaling: true,
     depthAwareUpsampling: true,
     normalDepthBuffer,
-    samples: 20,
-    rings: 6,
-    distanceThreshold: 0.5,
-    distanceFalloff: 0.5,
-    rangeThreshold: 0.2,
-    rangeFalloff: 0.01,
-    luminanceInfluence: 0,
-    minRadiusScale: 0.1,
-    radius: 0.1,
-    intensity: 20,
-    bias: 0.2,
-    fade: 0.9,
+    samples: 9,
+    rings: 4,
+    distanceThreshold: 0.9,
+    rangeThreshold: 0.6,
+    rangeFalloff: 0.02,
+    luminanceInfluence: 0.8,
+    minRadiusScale: 0.3,
+    radius: 0.2,
+    intensity: 10,
+    fade: 0.2,
     color: null,
-    resolutionScale: 0.5,
+    // resolutionScale: 0.5,
   } as any)
 
   const bloomEffect = new BloomEffect({
