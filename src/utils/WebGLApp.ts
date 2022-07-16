@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { World } from 'cannon-es'
+import type cannonDebugger from 'cannon-es-debugger'
 import Stats from 'stats.js'
 import { GUI } from 'lil-gui'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -43,6 +44,7 @@ export type WebGLAppOptions = {
   maxDeltaTime?: number
   cannon?: {
     world: World
+    debugger?: typeof cannonDebugger
     maxSubSteps?: number
   }
 }
@@ -73,6 +75,7 @@ export default class WebGLApp {
   camera: THREE.PerspectiveCamera
   scene: THREE.Scene
   world?: World
+  cannonDebugger?: ReturnType<typeof cannonDebugger>
   protected _maxSubSteps?: number
   composer: EffectComposer | null = null
   stats: Stats | null = null
@@ -141,6 +144,9 @@ export default class WebGLApp {
     if (options.cannon) {
       this.world = options.cannon.world
       this._maxSubSteps = options.cannon.maxSubSteps
+      if (options.cannon.debugger) {
+        this.cannonDebugger = options.cannon.debugger(scene, this.world)
+      }
     }
 
     if (options.postprocessing) {
@@ -270,6 +276,7 @@ export default class WebGLApp {
 
       if (this.world) {
         this.world.step(1 / 60, deltaTime, this._maxSubSteps)
+        this.cannonDebugger?.update()
         this.events.physicsUpdated.emit(deltaTime)
       }
     }

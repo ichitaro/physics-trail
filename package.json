@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "cannon-es": "^0.19.0",
+    "cannon-es-debugger": "^1.0.0",
     "lil-gui": "^0.17.0",
     "p-limit": "^4.0.0",
     "postprocessing": "^6.28.2",
