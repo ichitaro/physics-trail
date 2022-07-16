@@ -133,7 +133,7 @@ function createPyramid(radius: number = 1, height: number = 1.5) {
       [0, 3, 2], // -x
       [0, 1, 4, 3], // -y
       [0, 2, 1], // -z
-      [1, 4, 2], // +x
+      [1, 2, 4], // +x
       [3, 4, 2], // +z
     ],
   })
