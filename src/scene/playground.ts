@@ -61,7 +61,7 @@ export function addPlayground() {
   })
 
   function resetBlocks() {
-    const gap = -0.31
+    const gap = -0.27
     const spread = 1
     const dummy = new THREE.Object3D()
 
