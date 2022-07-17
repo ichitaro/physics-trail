@@ -78,5 +78,7 @@ assets.loadQueued().then(() => {
   /**
    * Start render loop
    */
-  webgl.start()
+  setTimeout(() => {
+    webgl.start()
+  }, 500)
 })
