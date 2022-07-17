@@ -49,7 +49,7 @@ export function addPlayground() {
   })
 
   const blocks = Array.from({ length: 12 }).map((_, index, { length }) => {
-    const primitiveIndex = index % primitives.length
+    const primitiveIndex = ~~(Math.pow(index / length, 2) * primitives.length)
     const primitive = primitives[primitiveIndex]
     const trail = trails[primitiveIndex]
     const block = new Block({
