@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
 import assets from '../utils/assets'
 import Experience from '../utils/Experience'
-import Block from './Block'
+import Block, { Primitive } from './Block'
 import InstancedTrail from './InstancedTrail'
 import ObjectPicker from './ObjectPicker'
 import Magnet from './Magnet'
@@ -14,29 +14,46 @@ export function addPlayground() {
   const { scene } = webgl
   const world = webgl.world!
 
-  const blockScale = 0.2
-  const blockSize = { radius: 1 * blockScale, height: 4 * blockScale }
-  const pyramid = createPyramid(blockSize.radius, blockSize.height)
+  const primitives = (() => {
+    const scale = 0.2
+    const pyramidSize = { radius: 1 * scale, height: 4 * scale }
+    const boxSize = new THREE.Vector3(1, 15, 3).multiplyScalar(
+      pyramidSize.height / 15
+    )
+    return [
+      createBox(boxSize.x, boxSize.y, boxSize.z),
+      createPyramid(pyramidSize.radius, pyramidSize.height),
+    ]
+  })()
+
   const blockMaterial = new THREE.MeshBasicMaterial({
     color: new THREE.Color(keyColor).convertSRGBToLinear(),
     transparent: true,
     opacity: 0.7,
     depthTest: false,
   })
-  const trail = new InstancedTrail({
-    geometry: pyramid.geometry,
-    material: new THREE.MeshStandardMaterial({
-      roughness: 0.1,
-      metalness: 0,
-      flatShading: true,
-    }),
-    numSteps: 240,
+
+  const trailMaterial = new THREE.MeshStandardMaterial({
+    roughness: 0.1,
+    metalness: 0,
+    flatShading: true,
   })
-  scene.add(trail)
-  const blocks = Array.from({ length: 12 }).map(() => {
+  const trails = primitives.map(({ geometry }) => {
+    const trail = new InstancedTrail({
+      geometry: geometry,
+      material: trailMaterial,
+      numSteps: 240,
+    })
+    scene.add(trail)
+    return trail
+  })
+
+  const blocks = Array.from({ length: 12 }).map((_, index, { length }) => {
+    const primitiveIndex = index % primitives.length
+    const primitive = primitives[primitiveIndex]
+    const trail = trails[primitiveIndex]
     const block = new Block({
-      shape: pyramid.shape,
-      geometry: pyramid.geometry,
+      primitive,
       material: blockMaterial,
     })
     scene.add(block)
@@ -45,7 +62,7 @@ export function addPlayground() {
     return block
   })
   resetBlocks()
-  trail.buildMesh()
+  trails.forEach((trail) => trail.buildMesh())
 
   const picker = new ObjectPicker({
     objects: blocks,
@@ -72,7 +89,7 @@ export function addPlayground() {
 
       dummy.position.set(
         (Math.random() - 0.5) * spread,
-        gap + 0.5 * blockSize.height,
+        gap + 0.5 * block.primitive.height,
         (Math.random() - 0.5) * spread
       )
       dummy.rotation.set(0, Math.PI * Math.random(), 0)
@@ -80,7 +97,7 @@ export function addPlayground() {
       body.quaternion.copy(dummy.quaternion as any)
     }
 
-    trail.resetCounter()
+    trails.forEach((trail) => trail.resetCounter())
   }
 }
 
@@ -114,7 +131,19 @@ function resetBody(body: CANNON.Body) {
   body._wakeUpAfterNarrowphase = false
 }
 
-function createPyramid(radius: number = 1, height: number = 1.5) {
+function createBox(width: number, height: number, depth: number): Primitive {
+  const geometry = new THREE.BoxGeometry(width, height, depth)
+  const shape = new CANNON.Box(
+    new CANNON.Vec3(0.5 * width, 0.5 * height, 0.5 * depth)
+  )
+  return {
+    geometry,
+    shape,
+    height,
+  }
+}
+
+function createPyramid(radius: number = 1, height: number = 1.5): Primitive {
   const geometry = new THREE.ConeGeometry(radius, height, 4, 1)
   geometry.rotateY(Math.PI / 4)
   geometry.computeVertexNormals()
@@ -141,5 +170,6 @@ function createPyramid(radius: number = 1, height: number = 1.5) {
   return {
     geometry,
     shape,
+    height,
   }
 }
